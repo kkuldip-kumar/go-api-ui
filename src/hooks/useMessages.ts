@@ -47,8 +47,8 @@ export function useMessages(conversationId: string | null) {
 
   // ── Send message mutation with optimistic update ─────────────────────────
   const sendMutation = useMutation({
-    mutationFn: ({ convId, content }: { convId: string; content: string }) =>
-      messageApi.send(convId, content),
+    mutationFn: ({ convId, content, attachment_ids }: { convId: string; content: string, attachment_ids:string[] }) =>
+      messageApi.send(convId, content, attachment_ids),
 
     onMutate: async ({ convId, content }) => {
       // Cancel any in-flight fetches for this conversation
@@ -86,9 +86,9 @@ export function useMessages(conversationId: string | null) {
   })
 
   const sendMessage = useCallback(
-    (content: string) => {
+    (content: string, attachment_ids:string[]) => {
       if (!conversationId || !content.trim()) return
-      sendMutation.mutate({ convId: conversationId, content: content.trim() })
+      sendMutation.mutate({ convId: conversationId, content: content.trim(), attachment_ids })
     },
     [conversationId, sendMutation],
   )

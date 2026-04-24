@@ -110,16 +110,44 @@ export interface Notification {
   read_at?: string
 }
 
-// ─── WebSocket Events ────────────────────────────────────────────────────────
 
+
+// ─── WebSocket Events ────────────────────────────────────────────────────────
+ 
 export type WSEventType =
   | 'new_message'
   | 'message_status'
   | 'file_shared'
   | 'user_online'
   | 'user_offline'
-
+  | 'typing_start'
+  | 'typing_stop'
+ 
 export interface WSEvent<T = unknown> {
   type: WSEventType
   payload: T
+}
+ 
+// ─── File Upload ─────────────────────────────────────────────────────────────
+ 
+export interface UploadProgress {
+  id: string                  // temp local id
+  file: File
+  previewUrl: string | null   // object URL for images
+  progress: number            // 0-100
+  status: 'pending' | 'uploading' | 'done' | 'error'
+  attachment?: Attachment     // set when status === 'done'
+  error?: string
+}
+ 
+// ─── Push notifications ───────────────────────────────────────────────────────
+ 
+export type PushPermission = 'default' | 'granted' | 'denied' | 'unsupported'
+ 
+// ─── Typing indicators ───────────────────────────────────────────────────────
+ 
+export interface TypingUser {
+  userId: string
+  username: string
+  conversationId: string
 }

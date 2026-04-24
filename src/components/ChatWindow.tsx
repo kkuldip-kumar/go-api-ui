@@ -116,6 +116,7 @@ const wsConnected = useChatStore(s => s.wsConnected)
       {/* ── Composer ─────────────────────────────────────────────────── */}
       <Composer
         onSend={sendMessage}
+        conversationId={activeConversationId}
         isSending={isSending}
         disabled={!wsConnected && messages.length === 0}
         placeholder={wsConnected ? 'Message…' : 'Connecting…'}

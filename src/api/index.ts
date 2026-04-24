@@ -51,9 +51,10 @@ export const messageApi = {
       `/api/v1/messages/conversation/${conversationId}?page=${page}&per_page=${perPage}`,
     ),
 
-  send: (conversationId: string, content: string) =>
+  send: (conversationId: string, content: string, attachment_ids: string[]) =>
     apiClient.post<ApiResponse<Message>>('/api/v1/messages/send', {
       conversation_id: conversationId,
+      attachment_ids,
       content,
     }),
 }
