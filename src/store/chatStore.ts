@@ -1,8 +1,9 @@
 import { create } from 'zustand'
-import type { Conversation, Message, User } from '@/types'
+import type { Conversation, Message, TypingUser, User } from '@/types'
 
 interface OnlineMap { [userId: string]: boolean }
-
+// typingUsers[conversationId] = array of users currently typing
+interface TypingMap { [conversationId: string]: TypingUser[] }
 interface ChatState {
   // Conversations
   conversations: Conversation[]
@@ -25,7 +26,10 @@ interface ChatState {
   // Online presence
   onlineUsers: OnlineMap
   setUserOnline: (userId: string, online: boolean) => void
-
+  // Typing indicators — per conversation
+  typingUsers: TypingMap
+  setTyping: (convId: string, user: TypingUser) => void
+  clearTyping: (convId: string, userId: string) => void
   // User search results for new conversation
   searchResults: User[]
   setSearchResults: (users: User[]) => void
@@ -111,6 +115,18 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   setUserOnline: (userId, online) =>
     set((s) => ({ onlineUsers: { ...s.onlineUsers, [userId]: online } })),
 
+    typingUsers: {},
+  setTyping: (convId, user) =>
+    set((s) => {
+      const existing = s.typingUsers[convId] ?? []
+      const filtered = existing.filter((u) => u.userId !== user.userId)
+      return { typingUsers: { ...s.typingUsers, [convId]: [...filtered, user] } }
+    }),
+  clearTyping: (convId, userId) =>
+    set((s) => ({
+      typingUsers: { ...s.typingUsers, [convId]: (s.typingUsers[convId] ?? []).filter((u) => u.userId !== userId) },
+    })),
+
   searchResults: [],
   setSearchResults: (searchResults) => set({ searchResults }),
 
@@ -133,3 +149,6 @@ const EMPTY_MESSAGES: Message[] = [] // ← stable reference outside
 
 export const useConversationMessages = (convId: string | null) =>
   useChatStore((s) => (convId ? (s.messages[convId] ?? EMPTY_MESSAGES) : EMPTY_MESSAGES))
+
+export const useTypingUsers = (convId: string | null) =>
+  useChatStore((s) => (convId ? (s.typingUsers[convId] ?? []) : []))

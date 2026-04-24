@@ -6,7 +6,8 @@ import MessageList from './MessageList'
 import Composer from './Composer'
 import { useMessages } from '@/hooks/useMessages'
 import { useAuthStore } from '@/store/authStore'
-import { useChatStore, useActiveConversation, useConversationMessages } from '@/store/chatStore'
+import { useChatStore, useActiveConversation, useConversationMessages, useTypingUsers } from '@/store/chatStore'
+import TypingIndicator from './TypingIndicator'
 
 export default function ChatWindow() {
   // const { user } = useAuthStore()
@@ -17,7 +18,7 @@ const onlineUsers = useChatStore(s => s.onlineUsers)
 const wsConnected = useChatStore(s => s.wsConnected)
   const activeConv = useActiveConversation()
   const messages = useConversationMessages(activeConversationId)
-
+const typingUsers = useTypingUsers(activeConversationId)
   const {
     isLoading,
     isError,
@@ -104,13 +105,18 @@ const wsConnected = useChatStore(s => s.wsConnected)
           </div>
         </div>
       ) : (
-        <MessageList
-          messages={messages}
-          myUserId={user?.id ?? ''}
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          onLoadMore={fetchNextPage}
-        />
+  <>
+          <MessageList
+            messages={messages}
+            myUserId={user?.id ?? ''}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            onLoadMore={fetchNextPage}
+          />
+          {/* Typing indicator sits between message list and composer */}
+          <TypingIndicator users={typingUsers} />
+        </>
+
       )}
 
       {/* ── Composer ─────────────────────────────────────────────────── */}
