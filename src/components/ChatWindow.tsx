@@ -7,13 +7,14 @@ import { useMessages } from '@/hooks/useMessages'
 import { useAuthStore } from '@/store/authStore'
 import { useChatStore, useActiveConversation, useConversationMessages, useTypingUsers } from '@/store/chatStore'
 import TypingIndicator from './TypingIndicator'
+import { useShallow } from 'zustand/shallow'
 
 export default function ChatWindow() {
   // const { user } = useAuthStore()
   const user = useAuthStore(s => s.user)
   // const { activeConversationId, onlineUsers, wsConnected } = useChatStore()
   const activeConversationId = useChatStore(s => s.activeConversationId)
-const onlineUsers = useChatStore(s => s.onlineUsers)
+const onlineUsers = useChatStore(useShallow((s) => s.onlineUsers))
 const wsConnected = useChatStore(s => s.wsConnected)
   const activeConv = useActiveConversation()
   const messages = useConversationMessages(activeConversationId)

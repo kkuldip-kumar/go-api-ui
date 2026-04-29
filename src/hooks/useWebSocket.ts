@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react'
 import { BASE_WS_URL } from '@/lib/apiClient'
 import { useAuthStore } from '@/store/authStore'
 import { useChatStore } from '@/store/chatStore'
+import { useShallow } from 'zustand/react/shallow'
 import type { Message, WSEvent, TypingUser } from '@/types'
 
 const RECONNECT_DELAY_MS = 3_000
@@ -18,14 +19,24 @@ export function useWebSocket() {
   const connectRef = useRef<() => void>(() => {})
 
   const { accessToken, isAuthenticated } = useAuthStore()
-  const {
-    appendMessage,
-    updateMessageStatus,
-    setUserOnline,
-    setWsConnected,
-    setTyping,
-    clearTyping,
-  } = useChatStore()
+
+const {
+  appendMessage,
+  updateMessageStatus,
+  setUserOnline,
+  setWsConnected,
+  setTyping,
+  clearTyping,
+} = useChatStore(
+  useShallow((s) => ({
+    appendMessage: s.appendMessage,
+    updateMessageStatus: s.updateMessageStatus,
+    setUserOnline: s.setUserOnline,
+    setWsConnected: s.setWsConnected,
+    setTyping: s.setTyping,
+    clearTyping: s.clearTyping,
+  }))
+)
 
   const handleEvent = useCallback(
     (event: WSEvent) => {

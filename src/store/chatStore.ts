@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { Conversation, Message, TypingUser, User } from '@/types'
+import { useShallow } from 'zustand/shallow'
 
 interface OnlineMap { [userId: string]: boolean }
 // typingUsers[conversationId] = array of users currently typing
@@ -141,14 +142,21 @@ export const useChatStore = create<ChatState>()((set,) => ({
 
 // Selector helpers (avoid rerenders by selecting minimal slices)
 export const useActiveConversation = () =>
-  useChatStore((s) =>
-    s.conversations.find((c) => c.id === s.activeConversationId) ?? null,
+  useChatStore(
+    useShallow((s) =>
+      s.conversations.find((c) => c.id === s.activeConversationId) ?? null,
+    )
   )
 
-const EMPTY_MESSAGES: Message[] = [] // ← stable reference outside
+const EMPTY_MESSAGES: Message[] = []
+const EMPTY_TYPING: TypingUser[] = []
 
 export const useConversationMessages = (convId: string | null) =>
-  useChatStore((s) => (convId ? (s.messages[convId] ?? EMPTY_MESSAGES) : EMPTY_MESSAGES))
+  useChatStore(
+    useShallow((s) => s.messages[convId ?? ''] ?? EMPTY_MESSAGES)
+  )
 
 export const useTypingUsers = (convId: string | null) =>
-  useChatStore((s) => (convId ? (s.typingUsers[convId] ?? []) : []))
+  useChatStore(
+    useShallow((s) => convId ? (s.typingUsers[convId] ?? EMPTY_TYPING) : EMPTY_TYPING)
+  )
