@@ -1,4 +1,4 @@
-import axios, { type AxiosError } from 'axios'
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
@@ -6,7 +6,6 @@ export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   timeout: 15_000,
-  // withCredentials: true,  // ← add this
 })
 
 // ─── Request interceptor: attach Bearer token ────────────────────────────────
@@ -23,14 +22,17 @@ let isRefreshing = false
 let failedQueue: Array<{ resolve: (t: string) => void; reject: (e: unknown) => void }> = []
 
 function processQueue(err: unknown, token: string | null) {
-  failedQueue.forEach((p) => (err ? p.reject(err) : p.resolve(token!)))
+  // ✅ Explicit check instead of token! assertion (line 26)
+  failedQueue.forEach((p) => (err ? p.reject(err) : p.resolve(token ?? '')))
   failedQueue = []
 }
+
+type RetryableConfig = InternalAxiosRequestConfig & { _retry?: boolean }
 
 apiClient.interceptors.response.use(
   (res) => res,
   async (err: AxiosError) => {
-    const original = err.config as typeof err.config & { _retry?: boolean }
+    const original = err.config as RetryableConfig | undefined
 
     if (err.response?.status !== 401 || original?._retry) {
       return Promise.reject(err)
@@ -40,12 +42,16 @@ apiClient.interceptors.response.use(
       return new Promise<string>((resolve, reject) => {
         failedQueue.push({ resolve, reject })
       }).then((token) => {
-        if (original) {
-          original.headers!.Authorization = `Bearer ${token}`
+        // ✅ Guard instead of original! assertion (line 44) and headers! (line 46)
+        if (original?.headers) {
+          original.headers.Authorization = `Bearer ${token}`
+          return apiClient(original)
         }
-        return apiClient(original!)
+        return Promise.reject(new Error('Missing request config'))
       })
     }
+
+    if (!original) return Promise.reject(err)
 
     original._retry = true
     isRefreshing = true
@@ -66,10 +72,11 @@ apiClient.interceptors.response.use(
 
       processQueue(null, newToken)
 
-      if (original) {
-        original.headers!.Authorization = `Bearer ${newToken}`
+      // ✅ Guard instead of original! (line 70) and headers! (line 72)
+      if (original.headers) {
+        original.headers.Authorization = `Bearer ${newToken}`
       }
-      return apiClient(original!)
+      return apiClient(original)
     } catch (refreshErr) {
       processQueue(refreshErr, null)
       localStorage.removeItem('access_token')

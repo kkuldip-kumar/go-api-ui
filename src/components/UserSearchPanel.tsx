@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, X, Loader2, Plus, UserCheck } from 'lucide-react'
+import { Search, X, Loader2, Plus } from 'lucide-react'
 import clsx from 'clsx'
 import { authApi, conversationApi } from '@/api'
 import { useAuthStore } from '@/store/authStore'
 import { useChatStore } from '@/store/chatStore'
-import {Avatar} from './Avatar'
+import { Avatar } from './Avatar'
 import type { User } from '@/types'
 
 interface UserSearchPanelProps {
@@ -20,12 +20,22 @@ export default function UserSearchPanel({ open, onClose }: UserSearchPanelProps)
   const { upsertConversation, setActiveConversation } = useChatStore()
   const qc = useQueryClient()
 
-  // Focus input on open
+  // ✅ Reset query using a derived default — when panel closes, reset state
+  // so next open starts fresh. No setState inside effect body.
+  const prevOpenRef = useRef(open)
   useEffect(() => {
-    if (open) {
+    // Only act on open → true transition
+    if (!prevOpenRef.current && open) {
       setQuery('')
-      setTimeout(() => inputRef.current?.focus(), 50)
     }
+    prevOpenRef.current = open
+  }, [open])
+
+  // ✅ Focus input separately — no setState here, only DOM side-effect
+  useEffect(() => {
+    if (!open) return
+    const timer = setTimeout(() => inputRef.current?.focus(), 50)
+    return () => clearTimeout(timer)
   }, [open])
 
   // Close on Escape
@@ -71,7 +81,7 @@ export default function UserSearchPanel({ open, onClose }: UserSearchPanelProps)
 
       {/* Panel */}
       <div className="fixed inset-y-0 right-0 w-80 bg-surface-900 border-l border-surface-200/10 z-50 flex flex-col shadow-modal animate-slide-in-right">
-        
+
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-surface-200/8">
           <div className="flex-1">
@@ -141,7 +151,7 @@ export default function UserSearchPanel({ open, onClose }: UserSearchPanelProps)
                   className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-surface-800/60 transition-colors group"
                 >
                   <Avatar name={u.username} size="md" online={u.is_online} />
-                  
+
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white truncate">{u.username}</p>
                     <p className="text-[11px] text-surface-300/40 truncate">{u.email}</p>

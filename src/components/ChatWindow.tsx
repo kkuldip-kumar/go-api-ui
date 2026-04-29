@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Phone, Video, MoreVertical, MessageSquareDot } from 'lucide-react'
 import clsx from 'clsx'
 import {Avatar} from './Avatar'
@@ -6,18 +5,20 @@ import MessageList from './MessageList'
 import Composer from './Composer'
 import { useMessages } from '@/hooks/useMessages'
 import { useAuthStore } from '@/store/authStore'
-import { useChatStore, useActiveConversation, useConversationMessages } from '@/store/chatStore'
+import { useChatStore, useActiveConversation, useConversationMessages, useTypingUsers } from '@/store/chatStore'
+import TypingIndicator from './TypingIndicator'
+import { useShallow } from 'zustand/shallow'
 
 export default function ChatWindow() {
   // const { user } = useAuthStore()
   const user = useAuthStore(s => s.user)
   // const { activeConversationId, onlineUsers, wsConnected } = useChatStore()
   const activeConversationId = useChatStore(s => s.activeConversationId)
-const onlineUsers = useChatStore(s => s.onlineUsers)
+const onlineUsers = useChatStore(useShallow((s) => s.onlineUsers))
 const wsConnected = useChatStore(s => s.wsConnected)
   const activeConv = useActiveConversation()
   const messages = useConversationMessages(activeConversationId)
-
+const typingUsers = useTypingUsers(activeConversationId)
   const {
     isLoading,
     isError,
@@ -104,18 +105,23 @@ const wsConnected = useChatStore(s => s.wsConnected)
           </div>
         </div>
       ) : (
-        <MessageList
-          messages={messages}
-          myUserId={user?.id ?? ''}
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          onLoadMore={fetchNextPage}
-        />
+  <>
+          <MessageList
+            messages={messages}
+            myUserId={user?.id ?? ''}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            onLoadMore={fetchNextPage}
+          />
+          {/* Typing indicator sits between message list and composer */}
+          <TypingIndicator users={typingUsers} />
+        </>
+
       )}
 
       {/* ── Composer ─────────────────────────────────────────────────── */}
       <Composer
-        onSend={sendMessage}
+        onSend={(content, attachmentIds) => sendMessage(content, attachmentIds ?? [])}
         conversationId={activeConversationId}
         isSending={isSending}
         disabled={!wsConnected && messages.length === 0}

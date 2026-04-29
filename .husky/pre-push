@@ -1,0 +1,12 @@
+#!/bin/sh
+
+echo "🔍 Running checks before push..."
+
+npm run check && npm run build
+
+if [ $? -ne 0 ]; then
+  echo "❌ Checks failed. Push blocked."
+  exit 1
+fi
+
+echo "✅ All checks passed."

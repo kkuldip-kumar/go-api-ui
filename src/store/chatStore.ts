@@ -1,8 +1,10 @@
 import { create } from 'zustand'
-import type { Conversation, Message, User } from '@/types'
+import type { Conversation, Message, TypingUser, User } from '@/types'
+import { useShallow } from 'zustand/shallow'
 
 interface OnlineMap { [userId: string]: boolean }
-
+// typingUsers[conversationId] = array of users currently typing
+interface TypingMap { [conversationId: string]: TypingUser[] }
 interface ChatState {
   // Conversations
   conversations: Conversation[]
@@ -25,7 +27,10 @@ interface ChatState {
   // Online presence
   onlineUsers: OnlineMap
   setUserOnline: (userId: string, online: boolean) => void
-
+  // Typing indicators — per conversation
+  typingUsers: TypingMap
+  setTyping: (convId: string, user: TypingUser) => void
+  clearTyping: (convId: string, userId: string) => void
   // User search results for new conversation
   searchResults: User[]
   setSearchResults: (users: User[]) => void
@@ -40,7 +45,7 @@ interface ChatState {
   setWsConnected: (v: boolean) => void
 }
 
-export const useChatStore = create<ChatState>()((set, get) => ({
+export const useChatStore = create<ChatState>()((set,) => ({
   conversations: [],
   setConversations: (conversations) => set({ conversations }),
   upsertConversation: (conv) =>
@@ -111,6 +116,18 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   setUserOnline: (userId, online) =>
     set((s) => ({ onlineUsers: { ...s.onlineUsers, [userId]: online } })),
 
+    typingUsers: {},
+  setTyping: (convId, user) =>
+    set((s) => {
+      const existing = s.typingUsers[convId] ?? []
+      const filtered = existing.filter((u) => u.userId !== user.userId)
+      return { typingUsers: { ...s.typingUsers, [convId]: [...filtered, user] } }
+    }),
+  clearTyping: (convId, userId) =>
+    set((s) => ({
+      typingUsers: { ...s.typingUsers, [convId]: (s.typingUsers[convId] ?? []).filter((u) => u.userId !== userId) },
+    })),
+
   searchResults: [],
   setSearchResults: (searchResults) => set({ searchResults }),
 
@@ -125,11 +142,21 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
 // Selector helpers (avoid rerenders by selecting minimal slices)
 export const useActiveConversation = () =>
-  useChatStore((s) =>
-    s.conversations.find((c) => c.id === s.activeConversationId) ?? null,
+  useChatStore(
+    useShallow((s) =>
+      s.conversations.find((c) => c.id === s.activeConversationId) ?? null,
+    )
   )
 
-const EMPTY_MESSAGES: Message[] = [] // ← stable reference outside
+const EMPTY_MESSAGES: Message[] = []
+const EMPTY_TYPING: TypingUser[] = []
 
 export const useConversationMessages = (convId: string | null) =>
-  useChatStore((s) => (convId ? (s.messages[convId] ?? EMPTY_MESSAGES) : EMPTY_MESSAGES))
+  useChatStore(
+    useShallow((s) => s.messages[convId ?? ''] ?? EMPTY_MESSAGES)
+  )
+
+export const useTypingUsers = (convId: string | null) =>
+  useChatStore(
+    useShallow((s) => convId ? (s.typingUsers[convId] ?? EMPTY_TYPING) : EMPTY_TYPING)
+  )
