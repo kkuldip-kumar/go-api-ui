@@ -120,7 +120,7 @@ const typingUsers = useTypingUsers(activeConversationId)
 
       {/* ── Composer ─────────────────────────────────────────────────── */}
       <Composer
-        onSend={sendMessage}
+        onSend={(content, attachmentIds) => sendMessage(content, attachmentIds ?? [])}
         conversationId={activeConversationId}
         isSending={isSending}
         disabled={!wsConnected && messages.length === 0}

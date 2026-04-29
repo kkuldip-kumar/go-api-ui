@@ -7,7 +7,7 @@ const TYPING_THROTTLE_MS = 2_000
 export function useTyping(conversationId: string | null) {
   const { user } = useAuthStore()
   const lastSentAt = useRef(0)
-  const stopTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+const stopTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // ✅ Ref to hold sendTypingStop — breaks the forward-reference circular dependency
   const sendTypingStopRef = useRef<() => void>(() => {})
