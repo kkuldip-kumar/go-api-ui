@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Phone, Video, MoreVertical, MessageSquareDot } from 'lucide-react'
 import clsx from 'clsx'
 import {Avatar} from './Avatar'

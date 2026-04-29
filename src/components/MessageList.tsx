@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { format, isToday, isYesterday, isSameDay } from 'date-fns'
 import { Loader2, ArrowDown } from 'lucide-react'
 import clsx from 'clsx'
@@ -31,18 +31,18 @@ function DateDivider({ date }: { date: Date }) {
   )
 }
 
-function TypingIndicator() {
-  return (
-    <div className="flex items-end gap-2 px-4 pb-2">
-      <div className="w-7 flex-shrink-0" />
-      <div className="bg-surface-800 border border-surface-200/8 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5 shadow-bubble">
-        <span className="w-1.5 h-1.5 rounded-full bg-surface-300/50 animate-typing-1" />
-        <span className="w-1.5 h-1.5 rounded-full bg-surface-300/50 animate-typing-2" />
-        <span className="w-1.5 h-1.5 rounded-full bg-surface-300/50 animate-typing-3" />
-      </div>
-    </div>
-  )
-}
+// function TypingIndicator() {
+//   return (
+//     <div className="flex items-end gap-2 px-4 pb-2">
+//       <div className="w-7 flex-shrink-0" />
+//       <div className="bg-surface-800 border border-surface-200/8 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5 shadow-bubble">
+//         <span className="w-1.5 h-1.5 rounded-full bg-surface-300/50 animate-typing-1" />
+//         <span className="w-1.5 h-1.5 rounded-full bg-surface-300/50 animate-typing-2" />
+//         <span className="w-1.5 h-1.5 rounded-full bg-surface-300/50 animate-typing-3" />
+//       </div>
+//     </div>
+//   )
+// }
 
 export default function MessageList({
   messages,
@@ -51,36 +51,51 @@ export default function MessageList({
   isFetchingNextPage,
   onLoadMore,
 }: MessageListProps) {
-  const { containerRef, onScroll, scrollToBottomInstant, isAtBottomRef } = useAutoScroll({
+  const { containerRef, onScroll, scrollToBottomInstant } = useAutoScroll({
     messages,
   })
 
   const topSentinelRef = useRef<HTMLDivElement>(null)
-  const showScrollBtn =
-    containerRef.current
-      ? containerRef.current.scrollHeight -
-          containerRef.current.scrollTop -
-          containerRef.current.clientHeight >
-        200
-      : false
+  // const showScrollBtn =
+  //   containerRef.current
+  //     ? containerRef.current.scrollHeight -
+  //         containerRef.current.scrollTop -
+  //         containerRef.current.clientHeight >
+  //       200
+  //     : false
 
   // Intersection observer: trigger load-more when user scrolls to top
-  useEffect(() => {
-    const sentinel = topSentinelRef.current
-    if (!sentinel) return
+  // useEffect(() => {
+  //   const sentinel = topSentinelRef.current
+  //   if (!sentinel) return
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          onLoadMore()
-        }
-      },
-      { root: containerRef.current, threshold: 0 },
-    )
+  //   const observer = new IntersectionObserver(
+  //     ([entry]) => {
+  //       if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+  //         onLoadMore()
+  //       }
+  //     },
+  //     { root: containerRef.current, threshold: 0 },
+  //   )
 
-    observer.observe(sentinel)
-    return () => observer.disconnect()
-  }, [hasNextPage, isFetchingNextPage, onLoadMore, containerRef])
+  //   observer.observe(sentinel)
+  //   return () => observer.disconnect()
+  // }, [hasNextPage, isFetchingNextPage, onLoadMore, containerRef])
+  const [showScrollBtn, setShowScrollBtn] = useState(false)
+
+useEffect(() => {
+  const container = containerRef.current
+  if (!container) return
+
+  const handleScroll = () => {
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight
+    setShowScrollBtn(distanceFromBottom > 200)
+  }
+
+  container.addEventListener('scroll', handleScroll, { passive: true })
+  return () => container.removeEventListener('scroll', handleScroll)
+}, [containerRef])
 
   // Scroll to bottom on first render
   useEffect(() => {

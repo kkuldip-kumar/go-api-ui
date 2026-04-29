@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { messageApi } from '@/api'
 import { useChatStore } from '@/store/chatStore'
@@ -10,7 +10,7 @@ const PER_PAGE = 30
 export function useMessages(conversationId: string | null) {
   const queryClient = useQueryClient()
   const { user } = useAuthStore()
-  const { setMessages, prependMessages, replaceOptimistic, removeOptimistic, appendMessage } =
+  const { setMessages,  replaceOptimistic, removeOptimistic, appendMessage } =
     useChatStore()
 
   // ── Infinite query: loads pages from the server ─────────────────────────

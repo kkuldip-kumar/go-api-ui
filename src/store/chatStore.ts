@@ -44,7 +44,7 @@ interface ChatState {
   setWsConnected: (v: boolean) => void
 }
 
-export const useChatStore = create<ChatState>()((set, get) => ({
+export const useChatStore = create<ChatState>()((set,) => ({
   conversations: [],
   setConversations: (conversations) => set({ conversations }),
   upsertConversation: (conv) =>

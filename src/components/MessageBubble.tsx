@@ -1,5 +1,5 @@
 import { format, isToday, isYesterday } from 'date-fns'
-import { Check, CheckCheck, Clock, FileText, Video, Download, Expand } from 'lucide-react'
+import { Check, CheckCheck, Clock, FileText, Download } from 'lucide-react'
 import clsx from 'clsx'
 import type { Message, Attachment } from '@/types'
 
@@ -15,27 +15,27 @@ function StatusTick({ status }: { status: Message['status'] }) {
 
 // ─── Individual attachment renderers ─────────────────────────────────────────
 
-function ImageAttachment({ att }: { att: Attachment }) {
-  return (
-    <a
-      href={att.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block relative overflow-hidden rounded-lg group"
-    >
-      <img
-        src={att.url}
-        alt={att.original_name}
-        className="w-full h-auto max-h-52 object-cover transition-opacity group-hover:opacity-90"
-        loading="lazy"
-      />
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors" />
-      <div className="absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-lg p-1">
-        <Expand className="w-3 h-3 text-white" />
-      </div>
-    </a>
-  )
-}
+// function ImageAttachment({ att }: { att: Attachment }) {
+//   return (
+//     <a
+//       href={att.url}
+//       target="_blank"
+//       rel="noopener noreferrer"
+//       className="block relative overflow-hidden rounded-lg group"
+//     >
+//       <img
+//         src={att.url}
+//         alt={att.original_name}
+//         className="w-full h-auto max-h-52 object-cover transition-opacity group-hover:opacity-90"
+//         loading="lazy"
+//       />
+//       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors" />
+//       <div className="absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-lg p-1">
+//         <Expand className="w-3 h-3 text-white" />
+//       </div>
+//     </a>
+//   )
+// }
 
 function VideoAttachment({ att }: { att: Attachment }) {
   return (

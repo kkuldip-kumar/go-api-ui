@@ -61,7 +61,7 @@ export default function AuthPage() {
   const validate = () => {
     const e: Record<string, string> = {}
     if (mode === 'register' && form.username.length < 3)
-      e.username = 'Username must be at least 3 characters'
+      {e.username = 'Username must be at least 3 characters'}
     if (!form.email.includes('@')) e.email = 'Invalid email address'
     if (form.password.length < 8) e.password = 'Password must be at least 8 characters'
     setErrors(e)

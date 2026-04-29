@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNowStrict } from 'date-fns'
 import {
@@ -89,7 +89,7 @@ export default function NotificationPanel({ open, onClose, anchorRef }: Notifica
     return () => document.removeEventListener('mousedown', handler)
   }, [open, onClose, anchorRef])
 
-  const { data, isLoading } = useQuery({
+  const { data: _data, isLoading } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
       const res = await notificationApi.list(1, 30)
