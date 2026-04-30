@@ -135,7 +135,7 @@ export interface UploadProgress {
   file: File
   previewUrl: string | null   // object URL for images
   progress: number            // 0-100
-  status: 'pending' | 'uploading' | 'done' | 'error'
+  status: 'pending' | 'uploading' | 'done' | 'error' | 'staged'
   attachment?: Attachment     // set when status === 'done'
   error?: string
 }
