@@ -218,8 +218,8 @@ export default function Composer({
       pendingSendContent,
       attachmentIds.length > 0 ? attachmentIds : undefined,
     )
-    setPendingSendContent(null)
-    setContent('')
+    // setPendingSendContent(null)
+    // setContent('')
     clearAll()
     sendTypingStop()
     if (textareaRef.current) {
